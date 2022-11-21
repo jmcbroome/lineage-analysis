@@ -36,8 +36,8 @@ This automatically infers new lineages on each tree in your time series, propaga
 Once you've generated all your results files, collect some statistics.
 
 ```
-for f in *annotated.pb ; do
-    matUtils summary -i $f -C ${f%.annotated.pb}.cladestats.txt ;
+for f in *proposed.pb ; do
+    matUtils summary -i $f -C ${f%.proposed.pb}.cladestats.txt ;
 done 
 ```
 
