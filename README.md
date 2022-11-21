@@ -37,8 +37,7 @@ Once you've generated all your results files, collect some statistics.
 
 ```
 for f in *annotated.pb ; do
-    export PREFIX=${f%.annotated.pb} ; 
-    matUtils summary -i $f -C $PREFIX.cladestats.txt ;
+    matUtils summary -i $f -C ${f%.annotated.pb}.cladestats.txt ;
 done 
 ```
 
