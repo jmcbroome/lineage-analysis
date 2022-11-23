@@ -12,7 +12,7 @@ touch floating_samples_clades.txt
 for f in *pb.gz ; do 
     export PREFIX=${f%.all.masked.pb.gz} ; 
     python3 strip_annotations.py $PREFIX.all.masked.pb.gz $PREFIX.cleaned.pb ;
-    matUtils annotate -T 4 -i $PREFIX.cleaned.pb -P floating_paths.txt -M floating_paths.txt -c floating_samples_clades.txt -o $PREFIX.pb ; 
+    matUtils annotate -T 4 -i $PREFIX.cleaned.pb -P floating_paths.txt -c floating_samples_clades.txt -o $PREFIX.pb ; 
     gzip $PREFIX.pb ; 
     cd automate-lineages-prototype ;
     snakemake -c1 -s flag_lineages.smk ../$PREFIX.proposed.report.tsv ; 
