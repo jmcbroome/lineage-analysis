@@ -18,12 +18,13 @@ git clone --recurse-submodules https://github.com/jmcbroome/lineage-analysis
 Once your environment is set up and your files are available, run the following:
 
 ```
-set -e 
+set -e
 touch floating_paths.txt
 touch floating_samples_clades.txt
 for f in *pb.gz ; do 
     export PREFIX=${f%.all.masked.pb.gz} ; 
-    matUtils annotate -T 4 -i $PREFIX.all.masked.pb.gz -P floating_paths.txt floating_samples_clades.txt -o $PREFIX.pb ; 
+    python3 strip_annotations.py $PREFIX.all.masked.pb.gz $PREFIX.cleaned.pb ;
+    matUtils annotate -T 4 -i $PREFIX.cleaned.pb -P floating_paths.txt -M floating_paths.txt -c floating_samples_clades.txt -o $PREFIX.pb ; 
     gzip $PREFIX.pb ; 
     cd automate-lineages-prototype ;
     snakemake -c1 -s flag_lineages.smk ../$PREFIX.proposed.report.tsv ; 
@@ -42,6 +43,9 @@ Once you've generated all your results files, collect some statistics by running
 for f in *proposed.pb ; do
     matUtils summary -i $f -c ${f%.proposed.pb}.cladestats.txt ;
 done
+```
+
+```
 python3 compile_reports.py
 ```
 
