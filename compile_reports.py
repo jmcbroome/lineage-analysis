@@ -26,16 +26,21 @@ def argparser():
     parser.add_argument("-e","--escape_change",default=0,type=float,help="Minimum gain of immune escape as estimated by Bloom DMS data. Default is 0 (no change to escape value).")
     parser.add_argument("-p","--persistence",default=0,type=int,help="Minimum number of consecutive trees since initial designation. Default 0 (new lineages in the final tree can be accepted).")
     parser.add_argument("-o","--output",default="compiled_report.tsv",help="Name the compiled output report tsv.")
+    parser.add_argument("-a","--active",action='store_true',help='Include only lineages that were actively growing within the last week examined.')
     return parser.parse_args()
 
 def main():
     args = argparser()
     rdf = read_group(args.input + "*report.tsv")
     cdf = read_group(args.input + "*cladestats.txt")
-    slopes = cdf.set_index(['clade','num']).sort_index().groupby("clade").inclusive_count.pct_change().groupby(level=0).mean().to_dict()
+    tchange = cdf.set_index(['clade','num']).sort_index().groupby("clade").exclusive_count.pct_change().reset_index()
+    slopes = tchange.groupby(level=0).min().to_dict()
+    recent = set(tchange[(tchange.num == tchange.num.max()) & (tchange.exclusive_count > 0)].clade)
+    rdf['active'] = rdf.proposed_sublineage.isin(recent)
     rdf['growth'] = rdf.proposed_sublineage.apply(lambda x:slopes.get(x,np.nan))
     maxnum = rdf.num.max()
-    final = rdf[(rdf.net_escape_gain > args.escape_change) & (rdf.growth > args.growth) & (args.persistence > maxnum - rdf.num)]
+    #exclude proposed sublineages that are in turn descendents of existing proposals.
+    final = rdf[(rdf.net_escape_gain > args.escape_change) & (rdf.growth > args.growth) & (args.persistence > maxnum - rdf.num) & (rdf.parent.apply(lambda x:"auto." not in x))]
     final.to_csv(args.output,sep='\t')
 
 if __name__ == "__main__":
