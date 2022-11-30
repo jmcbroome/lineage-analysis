@@ -18,24 +18,8 @@ git clone --recurse-submodules https://github.com/jmcbroome/lineage-analysis
 Once your environment is set up and your files are available, run the following:
 
 ```
-set -e
-touch floating_paths.txt
-touch floating_samples_clades.txt
-for f in *pb.gz ; do 
-    export PREFIX=${f%.all.masked.pb.gz} ; 
-    python3 strip_annotations.py $PREFIX.all.masked.pb.gz $PREFIX.cleaned.pb ;
-    matUtils annotate -T 4 -i $PREFIX.cleaned.pb -P floating_paths.txt -c floating_samples_clades.txt -o $PREFIX.pb ; 
-    gzip $PREFIX.pb ; 
-    cd automate-lineages-prototype ;
-    snakemake -c1 -s flag_lineages.smk ../$PREFIX.proposed.report.tsv ; 
-    cd .. ; 
-    matUtils extract -i $PREFIX.proposed.pb -C floating_paths.base.txt ; 
-    awk -F'\t' '{{print $1"\t"$3}}' floating_paths.base.txt | tail -n +2 > floating_paths.txt ; 
-    python3 extract_sample_clades.py $PREFIX.proposed.pb > floating_samples_clades.txt ; 
-done
+bash ./loop.sh
 ```
-
-We additionally provide the above, with some additional code clearing out any preexisting files 
 
 This automatically infers new lineages on each tree in your time series, propagating inferred lineages between trees. Note that the glob order is alphanumeric- if you use the standard tree name formatting (e.g. public-YYYY-MM-DD) then it should be in the correct time order as well.
 
@@ -48,7 +32,7 @@ done
 ```
 
 ```
-python3 compile_reports.py
+python3 compile_reports.py -a
 ```
 
 Your results will be visible in compiled_report.tsv. There are adjustable parameters for compile_reports.py (use --help).
